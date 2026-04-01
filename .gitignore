@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+data/cv_interventions_raw.json
+data/attrition_scores.json
+data/training_data.json
+data/cv_interventions_timeseries.json
