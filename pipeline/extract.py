@@ -57,7 +57,7 @@ FROM ctgov.studies s
 JOIN ctgov.interventions i ON i.nct_id = s.nct_id
 WHERE s.study_type = 'INTERVENTIONAL'
   AND s.start_date >= '2005-01-01'
-  AND i.intervention_type IN ('Drug', 'Procedure', 'Device', 'Behavioral', 'Radiation')
+  AND i.intervention_type IN ('DRUG', 'PROCEDURE', 'DEVICE', 'BEHAVIORAL', 'RADIATION', 'BIOLOGICAL')
   AND EXISTS (
       SELECT 1 FROM ctgov.conditions c
       WHERE c.nct_id = s.nct_id
