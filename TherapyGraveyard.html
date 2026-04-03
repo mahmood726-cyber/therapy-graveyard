@@ -50,6 +50,27 @@
   --badge-bg: #333;
 }
 
+/* ===== Skip Link (Accessibility) ===== */
+.tg-skip-link {
+  position: absolute;
+  top: -100%;
+  left: 8px;
+  z-index: 10000;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 0 0 6px 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.tg-skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ===== Reset & Base ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -388,6 +409,7 @@ body {
 </style>
 </head>
 <body>
+<a href="#tg-main-content" class="tg-skip-link">Skip to main content</a>
 
 <!-- ===== HEADER ===== -->
 <header class="tg-header" role="banner">
@@ -450,10 +472,10 @@ body {
 </nav>
 
 <!-- ===== MAIN CONTENT ===== -->
-<main class="tg-main" role="main">
+<main class="tg-main" role="main" id="tg-main-content" tabindex="-1">
   <!-- Graveyard View -->
   <div class="tg-view active" id="tg-view-graveyard">
-    <div class="tg-graveyard-info" id="tg-graveyard-info"></div>
+    <div class="tg-graveyard-info" id="tg-graveyard-info" aria-live="polite" role="status"></div>
     <div id="tg-graveyard-chart"></div>
   </div>
 
@@ -661,7 +683,12 @@ function bindToolbar() {
 function showView(viewName) {
   document.querySelectorAll('.tg-view').forEach(v => v.classList.remove('active'));
   const el = document.getElementById('tg-view-' + viewName);
-  if (el) el.classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    // Focus management: move focus to the active view container
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+    setTimeout(() => el.focus(), 50);
+  }
 }
 
 function renderCurrentView() {
@@ -1168,28 +1195,44 @@ function renderStatistics() {
 }
 
 function renderSurvivalCurve(data, style, baseLayout) {
-  const allItems = data.filter(d => d.lifespan !== null && d.lifespan !== undefined);
+  const allItems = data.filter(d => d.lifespan !== null && d.lifespan !== undefined && d.lifespan > 0);
   const totalN = allItems.length;
   if (totalN === 0) return;
 
-  const deathEvents = allItems
-    .filter(d => d.status === 'DEAD' && d.lifespan !== null)
-    .map(d => d.lifespan)
-    .sort((a, b) => a - b);
+  // Build combined event list: deaths (event=1) and censorings (event=0)
+  const events = [];
+  allItems.forEach(d => {
+    if (d.status === 'DEAD') {
+      events.push({ time: d.lifespan, event: 1 }); // death
+    } else {
+      events.push({ time: d.lifespan, event: 0 }); // censored (ALIVE/DECLINING/ZOMBIE)
+    }
+  });
+  // Sort by time ascending; deaths before censorings at same time
+  events.sort((a, b) => a.time !== b.time ? a.time - b.time : b.event - a.event);
 
-  // Build KM step function
+  // Build KM step function with proper censoring
   const kmX = [0], kmY = [1.0];
-  let nAtRisk = totalN, prevSurv = 1.0, i = 0;
+  let nAtRisk = totalN, prevSurv = 1.0, idx = 0;
 
-  while (i < deathEvents.length) {
-    const t = deathEvents[i];
+  while (idx < events.length) {
+    const t = events[idx].time;
     let deaths = 0;
-    while (i < deathEvents.length && deathEvents[i] === t) { deaths++; i++; }
-    const surv = prevSurv * (1 - deaths / nAtRisk);
-    kmX.push(t); kmY.push(prevSurv);  // horizontal step
-    kmX.push(t); kmY.push(surv);      // vertical drop
-    nAtRisk -= deaths;
-    prevSurv = surv;
+    let censored = 0;
+    // Count all events at this time point
+    while (idx < events.length && events[idx].time === t) {
+      if (events[idx].event === 1) deaths++;
+      else censored++;
+      idx++;
+    }
+    if (deaths > 0) {
+      const surv = prevSurv * (1 - deaths / nAtRisk);
+      kmX.push(t); kmY.push(prevSurv);  // horizontal step
+      kmX.push(t); kmY.push(surv);      // vertical drop
+      prevSurv = surv;
+    }
+    nAtRisk -= (deaths + censored);
+    if (nAtRisk <= 0) break;
   }
 
   const maxLS = Math.max(...allItems.map(d => d.lifespan || 0), 21);
@@ -1300,6 +1343,8 @@ function exportCSV() {
       let v = item[c];
       if (v === null || v === undefined) return '';
       v = String(v);
+      // CSV formula injection protection (do NOT include '-' as it corrupts negative values)
+      if (/^[=+@\t\r]/.test(v)) v = "'" + v;
       if (v.includes(',') || v.includes('"') || v.includes('\n')) {
         v = '"' + v.replace(/"/g, '""') + '"';
       }

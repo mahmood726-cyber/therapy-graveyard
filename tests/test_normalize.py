@@ -30,7 +30,7 @@ def test_brand_to_generic():
         f"Got: {normalize_name('Lipitor')}"
     assert normalize_name("Plavix 75mg") == "clopidogrel", \
         f"Got: {normalize_name('Plavix 75mg')}"
-    assert normalize_name("Entresto 97/103 mg") == "sacubitril", \
+    assert normalize_name("Entresto 97/103 mg") == "sacubitril/valsartan", \
         f"Got: {normalize_name('Entresto 97/103 mg')}"
 
 
@@ -133,6 +133,25 @@ def test_build_timeseries():
 
     # Deduplication: NCT001 duplicate should not be counted
     assert len(entry["nct_ids"]) == 3, f"Expected 3 unique NCTs, got {len(entry['nct_ids'])}"
+
+
+def test_sacubitril_valsartan_synonyms():
+    """All sacubitril/valsartan variants should merge to canonical name (P0-2)."""
+    assert normalize_name("lcz696") == "sacubitril/valsartan", \
+        f"Got: {normalize_name('lcz696')}"
+    assert normalize_name("sacubitril-valsartan") == "sacubitril/valsartan", \
+        f"Got: {normalize_name('sacubitril-valsartan')}"
+    assert normalize_name("sacubitril valsartan") == "sacubitril/valsartan", \
+        f"Got: {normalize_name('sacubitril valsartan')}"
+    assert normalize_name("Sacubitril") == "sacubitril/valsartan", \
+        f"Got: {normalize_name('Sacubitril')}"
+
+
+def test_sacubitril_valsartan_classifies_as_arni():
+    """Canonical sacubitril/valsartan should classify as ARNI (P0-2)."""
+    result = classify_intervention("sacubitril/valsartan", "Drug")
+    assert result["class"] == "arni", f"Got class: {result['class']}"
+    assert result["category"] == "raas", f"Got category: {result['category']}"
 
 
 # ── Test runner ─────────────────────────────────────────────────────

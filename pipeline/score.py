@@ -67,12 +67,12 @@ def score_intervention(entry):
     smoothed = _rolling_avg(counts, window=3)
     entry["smoothed_counts"] = [round(s, 2) for s in smoothed]
 
-    # 2. Find peak
+    # 2. Find peak (use smoothed values for both peak_year and peak_count)
     peak_val = max(smoothed) if smoothed else 0
     peak_idx = smoothed.index(peak_val) if peak_val > 0 else 0
     peak_year = START_YEAR + peak_idx
-    # Use raw count at peak index for peak_count
-    peak_count = max(counts) if counts else 0
+    # Use smoothed peak for peak_count (aligns peak_year and peak_count to same source)
+    peak_count = round(peak_val, 2)
 
     entry["peak_year"] = peak_year
     entry["peak_count"] = peak_count
@@ -129,9 +129,14 @@ def score_intervention(entry):
     else:
         gap_before_recent = N_YEARS
 
-    if decline >= 0.9 and years_silent >= 3:
+    # Check for mid-period activity (any trial in last 6 years: 2020-2025)
+    has_mid_period = any(counts[i] >= 1 for i in range(N_YEARS - 6, N_YEARS))
+
+    if decline >= 0.9 and years_silent >= 3 and not has_mid_period:
         entry["status"] = "DEAD"
-    elif decline >= 0.9 and has_recent and gap_before_recent >= 3:
+    elif decline >= 0.9 and (has_recent or has_mid_period) and gap_before_recent >= 3:
+        entry["status"] = "ZOMBIE"
+    elif decline >= 0.9 and years_silent >= 3 and has_mid_period:
         entry["status"] = "ZOMBIE"
     elif decline >= 0.5 and years_silent >= 1:
         entry["status"] = "DECLINING"

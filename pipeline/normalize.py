@@ -53,6 +53,14 @@ PROCEDURE_ALIASES = {
     "swan ganz": "pulmonary artery catheter",
 }
 
+# ── Drug synonyms (merge fragmented names into canonical form) ────────
+DRUG_SYNONYMS = {
+    "lcz696": "sacubitril/valsartan",
+    "sacubitril-valsartan": "sacubitril/valsartan",
+    "sacubitril valsartan": "sacubitril/valsartan",
+    "sacubitril": "sacubitril/valsartan",
+}
+
 # ── Regex patterns for stripping dosage/formulation ────────────────────
 # Matches things like: 40mg, 10 mg, 97/103 mg, 200mg/5ml, tablets, capsules, etc.
 _RE_DOSAGE = re.compile(
@@ -128,6 +136,10 @@ def normalize_name(raw_name):
     # Procedure aliases
     if name in PROCEDURE_ALIASES:
         name = PROCEDURE_ALIASES[name]
+
+    # Drug synonyms (merge fragmented names)
+    if name in DRUG_SYNONYMS:
+        name = DRUG_SYNONYMS[name]
 
     return name
 

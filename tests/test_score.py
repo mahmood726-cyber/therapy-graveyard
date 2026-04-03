@@ -204,6 +204,83 @@ def test_kill_event_linkage():
     assert entry["probable_cause"][0]["id"] == "KE001"
 
 
+def test_zombie_mid_period_activity():
+    """Ezetimibe pattern: declined but had trials in 2020 -> ZOMBIE not DEAD (P0-3)."""
+    counts = [0] * N_YEARS
+    # Peak around 2009 (index 4)
+    counts[3] = 12  # 2008
+    counts[4] = 15  # 2009 peak
+    counts[5] = 10  # 2010
+    counts[6] = 6   # 2011
+    counts[7] = 4   # 2012
+    counts[8] = 3   # 2013
+    counts[9] = 2   # 2014
+    counts[10] = 1  # 2015
+    counts[15] = 5  # 2020 (mid-period activity - within last 5 years)
+    # indices 16-20 (2021-2025): all 0
+    # years_silent = 2025-2020 = 5
+
+    entry = _make_entry(counts, name="ezetimibe_pattern")
+    score_intervention(entry)
+    assert entry["status"] == "ZOMBIE", \
+        f"Expected ZOMBIE for mid-period activity, got {entry['status']}"
+
+
+def test_peak_count_uses_smoothed():
+    """peak_count should use smoothed value, not raw max (P0-4)."""
+    counts = [0] * N_YEARS
+    counts[5] = 20   # 2010 raw peak
+    counts[6] = 2    # 2011 - big drop
+    counts[7] = 1    # 2012
+
+    entry = _make_entry(counts)
+    score_intervention(entry)
+    # Smoothed at index 5: avg(counts[4], counts[5], counts[6]) = (0+20+2)/3 = 7.33
+    # Raw peak = 20
+    # peak_count should be the smoothed value, not 20
+    assert entry["peak_count"] < 20, \
+        f"peak_count should be smoothed (< 20), got {entry['peak_count']}"
+    assert entry["peak_count"] == entry["smoothed_counts"][entry["peak_year"] - START_YEAR], \
+        f"peak_count ({entry['peak_count']}) should match smoothed value at peak year"
+
+
+def test_kill_event_dates_corrected():
+    """Verify the 5 corrected kill event dates (P0-1)."""
+    import json
+    ke_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "data", "kill_events.json")
+    with open(ke_path, "r", encoding="utf-8") as f:
+        events = json.load(f)
+
+    expected = {
+        "KE008": 2012,  # aliskiren ALTITUDE
+        "KE019": 2017,  # serelaxin RELAX-AHF-2
+        "KE020": 2011,  # nesiritide ASCEND-HF
+        "KE029": 2016,  # losmapimod LATITUDE-TIMI 60
+        "KE033": 2013,  # TTM trial
+    }
+    event_map = {e["id"]: e["year"] for e in events}
+    for ke_id, expected_year in expected.items():
+        actual = event_map.get(ke_id)
+        assert actual == expected_year, \
+            f"{ke_id}: expected year {expected_year}, got {actual}"
+
+
+def test_improve_it_kill_event_exists():
+    """Verify IMPROVE-IT rehabilitation kill event was added (P0-3)."""
+    import json
+    ke_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "data", "kill_events.json")
+    with open(ke_path, "r", encoding="utf-8") as f:
+        events = json.load(f)
+
+    improve_it = [e for e in events if "IMPROVE-IT" in e.get("event", "")]
+    assert len(improve_it) == 1, f"Expected 1 IMPROVE-IT event, found {len(improve_it)}"
+    assert improve_it[0]["year"] == 2015
+    assert "ezetimibe" in improve_it[0]["interventions"]
+    assert improve_it[0]["category"] == "rehabilitation"
+
+
 # ── Test runner ─────────────────────────────────────────────────────
 if __name__ == "__main__":
     tests = [(name, fn) for name, fn in sorted(globals().items())

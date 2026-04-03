@@ -78,7 +78,7 @@
   },
   {
     "id": "KE008",
-    "year": 2014,
+    "year": 2012,
     "event": "ALTITUDE — aliskiren added to ACEi/ARB increased renal events, hypotension, and hyperkalaemia",
     "category": "fda_safety_action",
     "interventions": ["aliskiren"],
@@ -199,7 +199,7 @@
   },
   {
     "id": "KE019",
-    "year": 2013,
+    "year": 2017,
     "event": "RELAX-AHF-2 — serelaxin failed to reduce CV death or worsening heart failure at 180 days",
     "category": "landmark_negative_trial",
     "interventions": ["serelaxin"],
@@ -210,7 +210,7 @@
   },
   {
     "id": "KE020",
-    "year": 2005,
+    "year": 2011,
     "event": "ASCEND-HF — nesiritide did not reduce dyspnoea or mortality in acute decompensated heart failure",
     "category": "landmark_negative_trial",
     "interventions": ["nesiritide"],
@@ -309,7 +309,7 @@
   },
   {
     "id": "KE029",
-    "year": 2014,
+    "year": 2016,
     "event": "LATITUDE-TIMI 60 — losmapimod (p38 MAPK inhibitor) failed to reduce CV events post-ACS",
     "category": "landmark_negative_trial",
     "interventions": ["losmapimod"],
@@ -328,6 +328,17 @@
     "source": "NEJM 2008;358:1431-43",
     "doi": "10.1056/NEJMoa0800742",
     "impact": "Ezetimibe use collapsed; later partially rehabilitated by IMPROVE-IT (zombie resurrection)"
+  },
+  {
+    "id": "KE035",
+    "year": 2015,
+    "event": "IMPROVE-IT — ezetimibe added to simvastatin reduced cardiovascular events in post-ACS patients",
+    "category": "rehabilitation",
+    "interventions": ["ezetimibe"],
+    "classes": ["cholesterol_absorption_inhibitor"],
+    "source": "NEJM 2015;372:2387-97",
+    "doi": "10.1056/NEJMoa1410489",
+    "impact": "Ezetimibe partially rehabilitated; guidelines re-endorsed as add-on to statin therapy"
   },
   {
     "id": "KE031",
@@ -353,7 +364,7 @@
   },
   {
     "id": "KE033",
-    "year": 2010,
+    "year": 2013,
     "event": "TTM trial — targeted temperature management at 33°C vs 36°C showed no difference in post-cardiac arrest outcomes",
     "category": "landmark_negative_trial",
     "interventions": ["therapeutic_hypothermia"],
