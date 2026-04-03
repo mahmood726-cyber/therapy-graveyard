@@ -24,9 +24,13 @@ if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stdout._tg_utf8 = True
 
-START_YEAR = 2005
-END_YEAR = 2025
-N_YEARS = END_YEAR - START_YEAR + 1  # 21
+# ── Constants (imported from package; local fallback for direct execution) ──
+try:
+    from pipeline import START_YEAR, END_YEAR, N_YEARS
+except ImportError:
+    START_YEAR = 2005
+    END_YEAR = 2025
+    N_YEARS = END_YEAR - START_YEAR + 1  # 21
 
 # Status severity for sorting (lower = more severe)
 _STATUS_SEVERITY = {

@@ -397,6 +397,36 @@ body {
 .tg-table tbody tr:nth-child(even) { background: var(--table-stripe); }
 .tg-table tbody tr:hover { background: rgba(13,110,253,0.06); }
 
+/* ===== Keyboard-accessible intervention list (P1-14) ===== */
+.tg-kbd-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 0;
+}
+.tg-kbd-list .tg-kbd-item {
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tg-kbd-list .tg-kbd-item:hover,
+.tg-kbd-list .tg-kbd-item:focus {
+  background: rgba(13,110,253,0.08);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tg-kbd-list .tg-kbd-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .tg-header { padding: 12px 14px; }
@@ -476,7 +506,8 @@ body {
   <!-- Graveyard View -->
   <div class="tg-view active" id="tg-view-graveyard">
     <div class="tg-graveyard-info" id="tg-graveyard-info" aria-live="polite" role="status"></div>
-    <div id="tg-graveyard-chart"></div>
+    <div id="tg-graveyard-chart" role="img" aria-label="Heatmap of cardiovascular intervention trial activity by year"></div>
+    <div id="tg-graveyard-kbd-list" class="tg-kbd-list" style="margin-top:8px;"></div>
   </div>
 
   <!-- Autopsy View -->
@@ -486,7 +517,7 @@ body {
       <span class="tg-autopsy-title" id="tg-autopsy-name"></span>
       <span class="tg-status-badge" id="tg-autopsy-badge"></span>
     </div>
-    <div class="tg-autopsy-chart" id="tg-autopsy-chart"></div>
+    <div class="tg-autopsy-chart" id="tg-autopsy-chart" role="img" aria-label="Trial count over time for selected intervention"></div>
     <div id="tg-kill-panel-container"></div>
     <div class="tg-metrics-row" id="tg-autopsy-metrics"></div>
     <div class="tg-class-context" id="tg-class-context"></div>
@@ -497,19 +528,19 @@ body {
     <div class="tg-stats-grid">
       <div class="tg-stat-card">
         <h3>Status Distribution</h3>
-        <div class="tg-stat-chart" id="tg-stat-pie"></div>
+        <div class="tg-stat-chart" id="tg-stat-pie" role="img" aria-label="Pie chart of intervention status distribution"></div>
       </div>
       <div class="tg-stat-card">
         <h3>Deaths by Period</h3>
-        <div class="tg-stat-chart" id="tg-stat-period"></div>
+        <div class="tg-stat-chart" id="tg-stat-period" role="img" aria-label="Bar chart of deaths by time period"></div>
       </div>
       <div class="tg-stat-card">
         <h3>Kill Cause Breakdown</h3>
-        <div class="tg-stat-chart" id="tg-stat-causes"></div>
+        <div class="tg-stat-chart" id="tg-stat-causes" role="img" aria-label="Horizontal bar chart of kill event cause categories"></div>
       </div>
       <div class="tg-stat-card">
         <h3>Survival Curve</h3>
-        <div class="tg-stat-chart" id="tg-stat-survival"></div>
+        <div class="tg-stat-chart" id="tg-stat-survival" role="img" aria-label="Kaplan-Meier survival curve of intervention lifespan"></div>
       </div>
       <div class="tg-stat-card">
         <h3>Class Mortality Table</h3>
@@ -744,6 +775,7 @@ function renderGraveyard() {
   if (data.length === 0) {
     if (el._hasPlot) { Plotly.purge(el); el._hasPlot = false; }
     el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">No interventions match the current filters.</div>';
+    document.getElementById('tg-graveyard-kbd-list').innerHTML = '';
     return;
   }
 
@@ -868,6 +900,27 @@ function renderGraveyard() {
       }
       if (name) openAutopsy(name);
     }
+  });
+
+  // Keyboard-accessible intervention list (P1-14)
+  const kbdList = document.getElementById('tg-graveyard-kbd-list');
+  let kbdH = '<div role="list" aria-label="Intervention list for keyboard navigation">';
+  displayData.forEach(d => {
+    const dotColor = STATUS_COLORS[d.status] || '#999';
+    kbdH += '<div class="tg-kbd-item" role="listitem" tabindex="0" data-intv="' + escapeHtml(d.intervention) + '">';
+    kbdH += '<span class="tg-kbd-dot" style="background:' + dotColor + ';" aria-hidden="true"></span>';
+    kbdH += escapeHtml(d.intervention.replace(/_/g, ' '));
+    kbdH += ' <small style="color:var(--text-muted);">(' + escapeHtml(d.status) + ', peak ' + escapeHtml(String(d.peak_year)) + ')</small>';
+    kbdH += '</div>';
+  });
+  kbdH += '</div>';
+  kbdList.innerHTML = kbdH;
+  kbdList.querySelectorAll('.tg-kbd-item').forEach(item => {
+    const handler = () => { const n = item.dataset.intv; if (n) openAutopsy(n); };
+    item.addEventListener('click', handler);
+    item.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+    });
   });
 }
 
@@ -1008,7 +1061,7 @@ function renderAutopsy() {
       const evt = fullKE || kc;
       h += '<div class="kill-event">' + escapeHtml(evt.event || '') + '</div>';
       h += '<div class="kill-meta">';
-      h += '<span>Year: <strong>' + evt.year + '</strong></span>';
+      h += '<span>Year: <strong>' + escapeHtml(String(evt.year)) + '</strong></span>';
       h += '<span class="kill-cat-badge">' + escapeHtml((evt.category || '').replace(/_/g, ' ')) + '</span>';
       if (evt.source) h += '<span>Source: ' + escapeHtml(evt.source) + '</span>';
       if (evt.doi) h += '<span><a href="https://doi.org/' + escapeHtml(evt.doi) + '" target="_blank" rel="noopener">DOI</a></span>';
@@ -1033,7 +1086,7 @@ function renderAutopsy() {
     { label: 'Decline Ratio', value: item.decline_ratio !== null ? (item.decline_ratio * 100).toFixed(0) + '%' : 'N/A' }
   ];
   document.getElementById('tg-autopsy-metrics').innerHTML = metrics.map(m =>
-    '<div class="tg-metric-card"><div class="metric-value">' + m.value + '</div><div class="metric-label">' + m.label + '</div></div>'
+    '<div class="tg-metric-card"><div class="metric-value">' + escapeHtml(String(m.value)) + '</div><div class="metric-label">' + escapeHtml(m.label) + '</div></div>'
   ).join('');
 
   // Class context sparklines
@@ -1042,6 +1095,11 @@ function renderAutopsy() {
 
 function renderClassContext(item) {
   const ctxEl = document.getElementById('tg-class-context');
+
+  // Purge existing sparkline Plotly charts to prevent memory leaks (P1-10)
+  ctxEl.querySelectorAll('.spark-chart').forEach(el => {
+    if (el._hasPlot) { try { Plotly.purge(el); } catch(e) { /* ignore */ } el._hasPlot = false; }
+  });
 
   if (STATE.level === 'molecule' && item.drug_class) {
     const siblings = TG_DATA.molecules.filter(m => m.drug_class === item.drug_class && m.intervention !== item.intervention);
@@ -1053,7 +1111,7 @@ function renderClassContext(item) {
         const safeId = 'tg-spark-' + sib.intervention.replace(/[^a-zA-Z0-9]/g, '_');
         h += '<div class="tg-sparkline-card" data-intervention="' + escapeHtml(sib.intervention) + '" role="button" tabindex="0">';
         h += '<div class="spark-name" style="color:' + (STATUS_COLORS[sib.status] || 'inherit') + '">';
-        h += escapeHtml(sib.intervention.replace(/_/g, ' ')) + ' <small>(' + sib.status + ')</small></div>';
+        h += escapeHtml(sib.intervention.replace(/_/g, ' ')) + ' <small>(' + escapeHtml(sib.status) + ')</small></div>';
         h += '<div class="spark-chart" id="' + safeId + '"></div>';
         h += '</div>';
       });
@@ -1101,10 +1159,21 @@ function renderClassContext(item) {
     h += item.member_molecules.map(m => {
       const mol = TG_DATA.molecules.find(x => x.intervention === m);
       const color = mol ? (STATUS_COLORS[mol.status] || 'inherit') : 'inherit';
-      return '<span style="display:inline-block;margin-right:8px;padding:2px 8px;border-radius:4px;background:var(--badge-bg);color:' + color + ';cursor:pointer;" onclick="openAutopsy(\'' + escapeHtml(m).replace(/'/g, "\\'") + '\')">' + escapeHtml(m.replace(/_/g, ' ')) + '</span>';
+      return '<span class="tg-mol-badge" style="display:inline-block;margin-right:8px;padding:2px 8px;border-radius:4px;background:var(--badge-bg);color:' + color + ';cursor:pointer;" data-mol="' + escapeHtml(m) + '" role="button" tabindex="0">' + escapeHtml(m.replace(/_/g, ' ')) + '</span>';
     }).join('');
     h += '</div>';
     ctxEl.innerHTML = h;
+    // Event delegation for molecule badges (P1-6 + P1-13)
+    ctxEl.querySelectorAll('.tg-mol-badge').forEach(badge => {
+      const handler = () => {
+        const mol = badge.dataset.mol;
+        if (mol) openAutopsy(mol);
+      };
+      badge.addEventListener('click', handler);
+      badge.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+      });
+    });
   } else {
     ctxEl.innerHTML = '';
   }

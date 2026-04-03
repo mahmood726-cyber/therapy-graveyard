@@ -36,7 +36,8 @@ CV_PATTERN = (
     "|acute coronary syndrome|venous thromboembolism"
     "|deep vein thrombosis|pulmonary embolism|arrhythmia"
     "|tachycardia|cardiac surgery|coronary bypass"
-    "|heart transplant|cardiogenic shock)%"
+    "|heart transplant|cardiogenic shock"
+    "|dyslipidemia|hyperlipidemia|hypercholesterolemia)%"
 )
 
 # ── SQL ─────────────────────────────────────────────────────────────────

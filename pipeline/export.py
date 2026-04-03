@@ -13,7 +13,7 @@ import io
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -100,7 +100,7 @@ def build_training_data(scored_path, kill_events_path, output_path):
 
     # ── 3. Build output JSON ────────────────────────────────────────
     output = {
-        "generated": datetime.utcnow().isoformat() + "Z",
+        "generated": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "start_year": START_YEAR,
         "end_year": END_YEAR,
         "molecule_count": len(molecules),

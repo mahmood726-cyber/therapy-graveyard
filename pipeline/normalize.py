@@ -24,10 +24,13 @@ except ImportError:
     # Fallback: no fuzzy matching
     lev_distance = None
 
-# ── Constants ───────────────────────────────────────────────────────────
-START_YEAR = 2005
-END_YEAR = 2025
-N_YEARS = END_YEAR - START_YEAR + 1  # 21
+# ── Constants (imported from package; local fallback for direct execution) ──
+try:
+    from pipeline import START_YEAR, END_YEAR, N_YEARS
+except ImportError:
+    START_YEAR = 2005
+    END_YEAR = 2025
+    N_YEARS = END_YEAR - START_YEAR + 1  # 21
 
 # ── Data loading ────────────────────────────────────────────────────────
 _BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -85,6 +88,10 @@ _RE_SALT = re.compile(
     re.IGNORECASE,
 )
 _RE_MULTI_SPACE = re.compile(r"\s+")
+_RE_ARM_PREFIX = re.compile(
+    r"^(?:active\s+comparator|comparator|experimental)\s*:\s*",
+    re.IGNORECASE,
+)
 
 
 def normalize_name(raw_name):
@@ -102,6 +109,9 @@ def normalize_name(raw_name):
         return ""
 
     name = raw_name.strip()
+
+    # Strip arm-label prefixes ("comparator: X", "active comparator: X", etc.)
+    name = _RE_ARM_PREFIX.sub("", name).strip()
 
     # Brand -> generic (case-insensitive lookup, try original casing first)
     cm = _load_class_map()
@@ -151,12 +161,12 @@ def classify_intervention(normalized_name, intervention_type):
     Lookup order: exact match -> substring -> Levenshtein (distance <= 2) -> unknown.
     """
     cm = _load_class_map()
-    itype = (intervention_type or "").strip()
+    itype = (intervention_type or "").strip().upper()
 
     # Decide which dictionary to search first based on type
-    if itype in ("Drug",):
+    if itype == "DRUG":
         search_order = [("drugs", "drug"), ("procedures", "procedure")]
-    elif itype in ("Procedure", "Device"):
+    elif itype in ("PROCEDURE", "DEVICE"):
         search_order = [("procedures", "procedure"), ("drugs", "drug")]
     else:
         search_order = [("drugs", "drug"), ("procedures", "procedure")]
@@ -196,7 +206,7 @@ def classify_intervention(normalized_name, intervention_type):
             if best_info is not None:
                 return {"class": best_info["class"], "category": best_info["category"], "type": best_type}
 
-    return {"class": "unknown", "category": "unknown", "type": itype.lower() if itype else "unknown"}
+    return {"class": "unknown", "category": "unknown", "type": itype.lower() if itype else "unknown"}  # itype already uppercased above
 
 
 def build_timeseries(records):

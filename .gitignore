@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 data/cv_interventions_raw.json
-data/attrition_scores.json
-data/training_data.json
-data/cv_interventions_timeseries.json
+data/cv_interventions_normalized.json
+data/cv_interventions_scored.json
+data/therapy_graveyard_data.json
+data/therapy_graveyard_data.min.json

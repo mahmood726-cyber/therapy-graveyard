@@ -154,6 +154,26 @@ def test_sacubitril_valsartan_classifies_as_arni():
     assert result["category"] == "raas", f"Got category: {result['category']}"
 
 
+def test_strip_comparator_prefix():
+    """Arm-label prefixes should be stripped (P1-2)."""
+    assert normalize_name("comparator: placebo") == "placebo", \
+        f"Got: {normalize_name('comparator: placebo')}"
+    assert normalize_name("active comparator: metoprolol") == "metoprolol", \
+        f"Got: {normalize_name('active comparator: metoprolol')}"
+    assert normalize_name("experimental: empagliflozin") == "empagliflozin", \
+        f"Got: {normalize_name('experimental: empagliflozin')}"
+
+
+def test_classify_case_insensitive_type():
+    """classify_intervention should handle AACT uppercase types (P1-4)."""
+    result_upper = classify_intervention("atorvastatin", "DRUG")
+    result_title = classify_intervention("atorvastatin", "Drug")
+    assert result_upper["class"] == result_title["class"], \
+        f"DRUG got {result_upper['class']}, Drug got {result_title['class']}"
+    assert result_upper["class"] == "statin", \
+        f"Expected statin, got {result_upper['class']}"
+
+
 # ── Test runner ─────────────────────────────────────────────────────
 if __name__ == "__main__":
     tests = [(name, fn) for name, fn in sorted(globals().items())

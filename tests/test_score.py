@@ -281,6 +281,41 @@ def test_improve_it_kill_event_exists():
     assert improve_it[0]["category"] == "rehabilitation"
 
 
+def test_shared_constants_consistent():
+    """START_YEAR, END_YEAR, N_YEARS should be consistent across modules (P1-9)."""
+    import importlib
+    # Import from pipeline package
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import pipeline as pkg
+    from score import START_YEAR as s_start, END_YEAR as s_end, N_YEARS as s_n
+    from normalize import START_YEAR as n_start, END_YEAR as n_end, N_YEARS as n_n
+
+    assert pkg.START_YEAR == s_start == n_start, \
+        f"START_YEAR mismatch: pkg={pkg.START_YEAR}, score={s_start}, normalize={n_start}"
+    assert pkg.END_YEAR == s_end == n_end, \
+        f"END_YEAR mismatch: pkg={pkg.END_YEAR}, score={s_end}, normalize={n_end}"
+    assert pkg.N_YEARS == s_n == n_n, \
+        f"N_YEARS mismatch: pkg={pkg.N_YEARS}, score={s_n}, normalize={n_n}"
+    assert pkg.N_YEARS == pkg.END_YEAR - pkg.START_YEAR + 1
+
+
+def test_datetime_utcnow_not_used():
+    """export.py should use datetime.now(timezone.utc), not deprecated utcnow() (P1-11)."""
+    export_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                               "pipeline", "export.py")
+    with open(export_path, "r", encoding="utf-8") as f:
+        src = f.read()
+    assert "datetime.utcnow()" not in src, "deprecated datetime.utcnow() still present in export.py"
+    assert "timezone.utc" in src, "timezone.utc not found in export.py"
+
+
+def test_pipeline_init_exists():
+    """pipeline/__init__.py should exist (P1-8)."""
+    init_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             "pipeline", "__init__.py")
+    assert os.path.isfile(init_path), f"pipeline/__init__.py not found at {init_path}"
+
+
 # ── Test runner ─────────────────────────────────────────────────────
 if __name__ == "__main__":
     tests = [(name, fn) for name, fn in sorted(globals().items())
