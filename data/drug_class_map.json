@@ -127,7 +127,11 @@
     "alteplase": {"class": "tpa", "category": "thrombolysis"},
     "tenecteplase": {"class": "tpa", "category": "thrombolysis"},
     "reteplase": {"class": "tpa", "category": "thrombolysis"},
-    "streptokinase": {"class": "thrombolytic", "category": "thrombolysis"}
+    "streptokinase": {"class": "thrombolytic", "category": "thrombolysis"},
+    "mavacamten": {"class": "cardiac_myosin_inhibitor", "category": "heart_failure"},
+    "tafamidis": {"class": "transthyretin_stabilizer", "category": "heart_failure"},
+    "patisiran": {"class": "transthyretin_silencer", "category": "heart_failure"},
+    "tirzepatide": {"class": "gip_glp1_receptor_agonist", "category": "glucose_lowering"}
   },
   "procedures": {
     "pci": {"class": "revascularization", "category": "revascularization"},
@@ -198,6 +202,7 @@
     "Coreg": "carvedilol",
     "Norvasc": "amlodipine",
     "Multaq": "dronedarone",
-    "Xarelto_AF": "rivaroxaban"
+    "Xarelto_AF": "rivaroxaban",
+    "Niaspan": "niacin"
   }
 }

@@ -5,15 +5,18 @@ Queries the AACT PostgreSQL database for all cardiovascular interventions
 from 2005-2025. Outputs raw records to data/cv_interventions_raw.json.
 """
 
-import io
 import json
 import os
 import sys
 
-# Windows UTF-8 fix (guard against double-wrapping)
-if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.stdout._tg_utf8 = True
+try:
+    from pipeline import ensure_utf8_stdout
+    ensure_utf8_stdout()
+except ImportError:
+    import io
+    if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stdout._tg_utf8 = True
 
 try:
     from dotenv import load_dotenv
@@ -37,7 +40,8 @@ CV_PATTERN = (
     "|deep vein thrombosis|pulmonary embolism|arrhythmia"
     "|tachycardia|cardiac surgery|coronary bypass"
     "|heart transplant|cardiogenic shock"
-    "|dyslipidemia|hyperlipidemia|hypercholesterolemia)%"
+    "|dyslipidemia|hyperlipidemia|hypercholesterolemia"
+    "|pericarditis|myocarditis|aortic aneurysm|cardiac amyloidosis)%"
 )
 
 # ── SQL ─────────────────────────────────────────────────────────────────

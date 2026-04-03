@@ -9,15 +9,19 @@ Functions:
   build_training_data(scored_path, kill_events_path, output_path) -> dict
 """
 
-import io
 import json
 import os
 import sys
 from datetime import datetime, timezone
 
-if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.stdout._tg_utf8 = True
+try:
+    from pipeline import ensure_utf8_stdout
+    ensure_utf8_stdout()
+except ImportError:
+    import io
+    if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stdout._tg_utf8 = True
 
 # Import scoring functions for class-level re-scoring
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -113,6 +117,14 @@ def build_training_data(scored_path, kill_events_path, output_path):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
+
+    # Also produce minified version safe for HTML <script> embedding
+    min_path = output_path.replace(".json", ".min.json")
+    min_json = json.dumps(output, ensure_ascii=False, separators=(",", ":"))
+    # Sanitize </script> sequences that would break HTML embedding
+    min_json = min_json.replace("</script>", r"<\/script>")
+    with open(min_path, "w", encoding="utf-8") as f:
+        f.write(min_json)
 
     size_kb = os.path.getsize(output_path) / 1024
     print(f"Exported {len(molecules)} molecules + {len(class_scored)} classes")

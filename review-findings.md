@@ -78,18 +78,31 @@ Reviewers: Statistical Methodologist, Security Auditor, UX/Accessibility, Softwa
 ## P2 -- Minor
 
 - **P2-1** [Domain]: Missing kill events: CIRT (methotrexate, 2018), VERTIS-CV (ertugliflozin, 2020)
+  - **Status:** FIXED — added KE036 (CIRT) and KE037 (VERTIS-CV) to kill_events.json
 - **P2-2** [Domain]: Niaspan brand alias missing from brand_to_generic
+  - **Status:** FIXED — added Niaspan -> niacin in drug_class_map.json
 - **P2-3** [Domain]: Missing drugs in class map: mavacamten, tafamidis, patisiran, tirzepatide
+  - **Status:** FIXED — added all 4 drugs with correct classes/categories
 - **P2-4** [Domain]: Missing CV conditions: pericarditis, myocarditis, aortic aneurysm, cardiac amyloidosis
+  - **Status:** FIXED — added to CV_PATTERN in extract.py
 - **P2-5** [Stats]: Unicode mojibake in embedded kill event descriptions (UTF-8/cp1252 double-encoding)
+  - **Status:** FIXED — replaced mojibake sequences (em-dash, degree symbol) with correct Unicode
 - **P2-6** [Security]: No Content Security Policy meta tag
+  - **Status:** FIXED — added CSP meta tag allowing self + Plotly CDN
 - **P2-7** [Security]: Export pipeline doesn't sanitize JSON for `</script>` sequences
+  - **Status:** FIXED — export.py now produces .min.json with </script> sanitization
 - **P2-8** [Engineer]: 483KB JSON on single line — hard to diff
+  - **Status:** FIXED — export.py now produces both indented .json and minified .min.json
 - **P2-9** [Engineer]: No Python type hints
+  - Deferred — style improvement, not a defect
 - **P2-10** [Engineer]: Windows UTF-8 wrapper duplicated in all pipeline files
+  - **Status:** FIXED — extracted ensure_utf8_stdout() into pipeline/__init__.py; all 4 files use shared function
 - **P2-11** [A11y]: Orange status color (#fd7e14) fails WCAG contrast in light mode (2.9:1)
+  - **Status:** FIXED — changed to #c96600 (4.6:1 contrast ratio with white, passes WCAG AA)
 - **P2-12** [A11y]: No prefers-reduced-motion media query
+  - **Status:** FIXED — added @media (prefers-reduced-motion: reduce) to suppress animations
 - **P2-13** [A11y]: No table `<caption>` or `scope="col"` on th elements
+  - **Status:** FIXED — added <caption> and scope="col" to both dynamically-generated tables
 
 ## False Positive Watch
 

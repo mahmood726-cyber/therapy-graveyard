@@ -8,15 +8,19 @@ Functions:
   normalize_raw_file(input_path, output_path) -> list[dict]
 """
 
-import io
 import json
 import os
 import re
 import sys
 
-if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.stdout._tg_utf8 = True
+try:
+    from pipeline import ensure_utf8_stdout
+    ensure_utf8_stdout()
+except ImportError:
+    import io
+    if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stdout._tg_utf8 = True
 
 try:
     from Levenshtein import distance as lev_distance

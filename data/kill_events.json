@@ -383,5 +383,27 @@
     "source": "NEJM 2011;365:2268-76",
     "doi": "10.1056/NEJMoa1109867",
     "impact": "FDA/EMA contraindicated dronedarone in permanent AF and severe HF; major market restriction"
+  },
+  {
+    "id": "KE036",
+    "year": 2018,
+    "event": "CIRT — low-dose methotrexate failed to reduce cardiovascular events in patients with stable atherosclerosis",
+    "category": "landmark_negative_trial",
+    "interventions": ["methotrexate"],
+    "classes": ["disease_modifying_antirheumatic"],
+    "source": "NEJM 2019;380:752-62",
+    "doi": "10.1056/NEJMoa1809798",
+    "impact": "Trial terminated for futility; distinguished anti-inflammatory CV benefit (IL-1b via canakinumab) from broad immunosuppression"
+  },
+  {
+    "id": "KE037",
+    "year": 2020,
+    "event": "VERTIS-CV — ertugliflozin did not meet superiority for MACE in type 2 diabetes with established CV disease",
+    "category": "landmark_negative_trial",
+    "interventions": ["ertugliflozin"],
+    "classes": ["sglt2_inhibitor"],
+    "source": "NEJM 2020;383:1425-35",
+    "doi": "10.1056/NEJMoa2004967",
+    "impact": "Ertugliflozin showed non-inferiority but not superiority for MACE; weakest CV evidence among SGLT2 inhibitors"
   }
 ]

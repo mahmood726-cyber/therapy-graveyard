@@ -15,14 +15,18 @@ Functions:
   score_file(input_path, kill_events_path, output_path) -> list[dict]
 """
 
-import io
 import json
 import os
 import sys
 
-if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.stdout._tg_utf8 = True
+try:
+    from pipeline import ensure_utf8_stdout
+    ensure_utf8_stdout()
+except ImportError:
+    import io
+    if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stdout._tg_utf8 = True
 
 # ── Constants (imported from package; local fallback for direct execution) ──
 try:

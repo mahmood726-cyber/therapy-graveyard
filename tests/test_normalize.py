@@ -174,6 +174,46 @@ def test_classify_case_insensitive_type():
         f"Expected statin, got {result_upper['class']}"
 
 
+def test_niaspan_brand_alias():
+    """Niaspan should map to niacin (P2-2)."""
+    assert normalize_name("Niaspan") == "niacin", \
+        f"Got: {normalize_name('Niaspan')}"
+
+
+def test_new_drugs_in_class_map():
+    """mavacamten, tafamidis, patisiran, tirzepatide should be in drug_class_map (P2-3)."""
+    result_mav = classify_intervention("mavacamten", "Drug")
+    assert result_mav["class"] == "cardiac_myosin_inhibitor", \
+        f"Got class: {result_mav['class']}"
+    result_taf = classify_intervention("tafamidis", "Drug")
+    assert result_taf["class"] == "transthyretin_stabilizer", \
+        f"Got class: {result_taf['class']}"
+    result_pat = classify_intervention("patisiran", "Drug")
+    assert result_pat["class"] == "transthyretin_silencer", \
+        f"Got class: {result_pat['class']}"
+    result_tir = classify_intervention("tirzepatide", "Drug")
+    assert result_tir["class"] == "gip_glp1_receptor_agonist", \
+        f"Got class: {result_tir['class']}"
+
+
+def test_new_kill_events_exist():
+    """CIRT (KE036) and VERTIS-CV (KE037) should be in kill_events.json (P2-1)."""
+    import json
+    ke_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "data", "kill_events.json")
+    with open(ke_path, "r", encoding="utf-8") as f:
+        events = json.load(f)
+    event_ids = {e["id"] for e in events}
+    assert "KE036" in event_ids, "CIRT kill event KE036 not found"
+    assert "KE037" in event_ids, "VERTIS-CV kill event KE037 not found"
+    cirt = [e for e in events if e["id"] == "KE036"][0]
+    assert "methotrexate" in cirt["interventions"]
+    assert cirt["year"] == 2018
+    vertis = [e for e in events if e["id"] == "KE037"][0]
+    assert "ertugliflozin" in vertis["interventions"]
+    assert vertis["year"] == 2020
+
+
 # ── Test runner ─────────────────────────────────────────────────────
 if __name__ == "__main__":
     tests = [(name, fn) for name, fn in sorted(globals().items())
