@@ -6,3 +6,11 @@ data/cv_interventions_normalized.json
 data/cv_interventions_scored.json
 data/therapy_graveyard_data.json
 data/therapy_graveyard_data.min.json
+
+# Sentinel pre-push hook output (auto-generated per session)
+STUCK_FAILURES.md
+STUCK_FAILURES.jsonl
+sentinel-findings.md
+sentinel-findings.jsonl
+review-findings.md
+review-findings.jsonl
