@@ -14,7 +14,7 @@ try:
     ensure_utf8_stdout()
 except ImportError:
     import io
-    if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
+    if "pytest" not in sys.modules and sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
         sys.stdout._tg_utf8 = True
 

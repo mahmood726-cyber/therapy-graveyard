@@ -5,6 +5,8 @@ import sys
 # ── Windows UTF-8 stdout wrapper (shared, deduplicated) ─────────────
 def ensure_utf8_stdout():
     """Wrap stdout with UTF-8 encoding on Windows (guard against double-wrap)."""
+    if "pytest" in sys.modules:
+        return
     if sys.platform == "win32" and not getattr(sys.stdout, "_tg_utf8", False):
         sys.stdout = io.TextIOWrapper(
             sys.stdout.buffer, encoding="utf-8", errors="replace"
